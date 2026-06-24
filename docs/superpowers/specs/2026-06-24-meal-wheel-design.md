@@ -37,25 +37,45 @@ A small, mobile-friendly web app that picks today's three meals (six dishes tota
 ### Algorithm sketch
 
 ```js
+// Each slot is bound to a list of possible categories (one per flavor).
+// The rule decides which flavor to pick per slot.
 const SLOTS = [
-  'breakfast-protein', 'breakfast-carb',
-  'lunch-protein',     'lunch-carb',
-  'dinner-protein',    'dinner-carb',
+  { id: 'breakfast-protein', meal: 'breakfast', kind: 'protein' },
+  { id: 'breakfast-carb',    meal: 'breakfast', kind: 'carb' },
+  { id: 'lunch-protein',     meal: 'lunch',     kind: 'protein' },
+  { id: 'lunch-carb',        meal: 'lunch',     kind: 'carb' },
+  { id: 'dinner-protein',    meal: 'dinner',    kind: 'protein' },
+  { id: 'dinner-carb',       meal: 'dinner',    kind: 'carb' },
 ];
+
+// Resolves the category key for a slot given a chosen flavor ('中式' | '西式').
+// e.g. ('breakfast', 'protein', '中式') -> '中式早餐蛋白'
+function categoryKeyFor(slot, flavor) {
+  const meal = { breakfast: '早餐', lunch: '正餐', dinner: '正餐' }[slot.meal];
+  const kind = slot.kind === 'protein' ? '蛋白' : '碳水';
+  return `${flavor}${meal}${kind}`;
+}
 
 function noRepeat(categories) {
   const used = new Set();
+  const flavors = pickFlavors('noRepeat');
   return SLOTS.map(slot => {
-    const pool = categories[slot].filter(d => !used.has(d));
+    const key = categoryKeyFor(slot, flavors[slot.meal]);
+    const pool = categories[key].filter(d => !used.has(d));
     const pick = pool.length
       ? pool[Math.floor(Math.random() * pool.length)]
-      : categories[slot][Math.floor(Math.random() * categories[slot].length)];
+      : categories[key][Math.floor(Math.random() * categories[key].length)];
     used.add(pick);
-    return pick;
+    return { slotId: slot.id, dish: pick, flavor: flavors[slot.meal] };
   });
 }
 
 // pureRandom, flavorRotation, mainRepeat — analogous, see app.js.
+// pickFlavors returns { breakfast, lunch, dinner } → '中式' | '西式'
+//   - noRepeat:  all three random (independently, or constrained by rule)
+//   - pureRandom: all three random
+//   - flavorRotation: breakfast === lunch, dinner is the other
+//   - mainRepeat: same as pureRandom
 ```
 
 ### Edge cases
@@ -173,8 +193,12 @@ Source files (read-only to app, edited manually by user):
 
 ### Interaction details
 
-- **"换一道" (per-dish swap):** picks a new random dish from same category, respecting the active rule's constraints (e.g., still no-repeats if that rule is active).
-- **"重新配餐" (full reroll):** runs the active rule from scratch, replaces all 6 dishes.
+- **"换一道" (per-dish swap):** picks a new random dish from the same category as the current dish, with the following per-rule semantics:
+  - **noRepeat:** new dish must not be one of the 5 other dishes already on the plate today. Fall back to allow-repeat after 5 retries.
+  - **pureRandom:** new dish is an unconstrained random pick from the category.
+  - **flavorRotation:** the slot's flavor is fixed (e.g., breakfast/lunch flavor stays as the rule decided); pick is unconstrained within that category.
+  - **mainRepeat:** if swapping lunch-protein or dinner-protein, the swapped dish becomes the new shared protein (both slots update). If swapping a carb, the new carb must differ from the other carb on the plate.
+- **"重新配餐" (full reroll):** runs the active rule from scratch, replaces all 6 dishes. The chosen flavor(s) for `flavorRotation` may change.
 - **Rule change:** if current 6 dishes violate the newly-selected rule, rerun the new rule (e.g., switching to "no repeat" when there are duplicates).
 - **"📋 复制今日":** copies the day as plain text to clipboard via `navigator.clipboard.writeText()`. Format below.
 
@@ -300,6 +324,14 @@ These may be revisited in v2 if the user wants them.
 ## 12. Open Questions
 
 None. All decisions resolved during brainstorming on 2026-06-24.
+
+## 13. Glossary
+
+- **Slot** — one of the 6 positions in a daily plan (e.g., `breakfast-protein`).
+- **Category** — one of the 8 keys in `dishes.json` (e.g., `中式早餐蛋白`).
+- **Flavor** — `中式` or `西式`; a slot's flavor determines which of the 2 candidate categories it draws from.
+- **Rule** — one of 4 generation presets that decides both flavor assignment and repeat semantics.
+- **Swap** — replace a single dish on the plate while respecting the active rule.
 
 ---
 
