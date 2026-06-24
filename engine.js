@@ -41,7 +41,7 @@ function pickOne(arr) {
 /**
  * Decide the flavor for each meal. The `noRepeat` rule can mix flavors
  * freely (it doesn't constrain flavors), so this is the same as `pureRandom`.
- * Exported so other rules can share it.
+ * Shared by noRepeat and pureRandom (same module, no export needed).
  * @returns {{breakfast: Flavor, lunch: Flavor, dinner: Flavor}}
  */
 function pickFlavorsFree() {
