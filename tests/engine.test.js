@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { categoryKeyFor, noRepeat, pureRandom, flavorRotation, mainRepeat, SLOTS } from '../engine.js';
+import { categoryKeyFor, noRepeat, pureRandom, flavorRotation, mainRepeat, swapDish, SLOTS } from '../engine.js';
 
 describe('categoryKeyFor', () => {
   it('maps breakfast protein to 中式早餐蛋白', () => {
@@ -191,5 +191,60 @@ describe('mainRepeat', () => {
       const key = categoryKeyFor(slot, r.flavor);
       expect(categories[key]).toContain(r.dish);
     }
+  });
+});
+
+describe('swapDish', () => {
+  const categories = {
+    '中式早餐蛋白': ['蛋A', '蛋B', '蛋C'],
+    '中式早餐碳水': ['包A', '包B', '包C'],
+    '中式正餐蛋白': ['鱼A', '鱼B', '鱼C'],
+    '中式正餐碳水': ['饭A', '饭B', '饭C'],
+    '西式早餐蛋白': ['西A', '西B', '西C'],
+    '西式早餐碳水': ['西D', '西E', '西F'],
+    '西式正餐蛋白': ['西G', '西H', '西I'],
+    '西式正餐碳水': ['西J', '西K', '西L'],
+  };
+
+  it('returns a new dish from the same category, different from current', () => {
+    const current = [
+      { slotId: 'breakfast-protein', dish: '蛋A', flavor: '中式' },
+      { slotId: 'lunch-protein',     dish: '鱼A', flavor: '中式' },
+    ];
+    for (let i = 0; i < 20; i++) {
+      const next = swapDish(current, 'breakfast-protein', categories, []);
+      const slot = SLOTS.find(s => s.id === 'breakfast-protein');
+      const key = categoryKeyFor(slot, '中式');
+      expect(categories[key]).toContain(next.dish);
+      expect(next.dish).not.toBe('蛋A');
+    }
+  });
+
+  it('respects the no-repeat constraint when a list of "used" dishes is given', () => {
+    const current = [
+      { slotId: 'breakfast-protein', dish: '蛋A', flavor: '中式' },
+      { slotId: 'breakfast-carb',    dish: '包A', flavor: '中式' },
+      { slotId: 'lunch-protein',     dish: '鱼A', flavor: '中式' },
+      { slotId: 'lunch-carb',        dish: '饭A', flavor: '中式' },
+      { slotId: 'dinner-protein',    dish: '西G', flavor: '西式' },
+      { slotId: 'dinner-carb',       dish: '西J', flavor: '西式' },
+    ];
+    const used = current.map(c => c.dish);
+    // Swap breakfast-protein. The new dish must be in the 中式早餐蛋白 category
+    // and not in `used`. '蛋B' and '蛋C' qualify.
+    for (let i = 0; i < 20; i++) {
+      const next = swapDish(current, 'breakfast-protein', categories, used);
+      expect(['蛋B', '蛋C']).toContain(next.dish);
+    }
+  });
+
+  it('falls back to allowing the current dish if the category is exhausted', () => {
+    // Only one dish in 中式早餐蛋白; swapping must still return that dish.
+    const tiny = { ...categories, '中式早餐蛋白': ['蛋A'] };
+    const current = [
+      { slotId: 'breakfast-protein', dish: '蛋A', flavor: '中式' },
+    ];
+    const next = swapDish(current, 'breakfast-protein', tiny, ['蛋A']);
+    expect(next.dish).toBe('蛋A');
   });
 });

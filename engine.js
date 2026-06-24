@@ -153,3 +153,25 @@ export function mainRepeat(categories) {
     { slotId: 'dinner-carb',       dish: dinnerCarb,                               flavor: mainFlavor },
   ];
 }
+
+/**
+ * Swap a single dish on the plate.
+ * @param {Array<{slotId: string, dish: string, flavor: Flavor}>} current
+ * @param {string} slotId — the slot to swap
+ * @param {Record<string, string[]>} categories
+ * @param {string[]} used — dishes already on the plate (for no-repeat)
+ * @returns {{slotId: string, dish: string, flavor: Flavor}}
+ */
+export function swapDish(current, slotId, categories, used = []) {
+  const target = current.find(c => c.slotId === slotId);
+  const slot = SLOTS.find(s => s.id === slotId);
+  const key = categoryKeyFor(slot, target.flavor);
+  const pool = categories[key].filter(d => d !== target.dish && !used.includes(d));
+  // If the only available dish is the current one (exhausted category or all
+  // others already used), fall back to any dish in the category except the
+  // current — and if that's empty too, allow the current.
+  if (pool.length) return { slotId, dish: pickOne(pool), flavor: target.flavor };
+  const altPool = categories[key].filter(d => d !== target.dish);
+  if (altPool.length) return { slotId, dish: pickOne(altPool), flavor: target.flavor };
+  return { slotId, dish: target.dish, flavor: target.flavor };
+}
