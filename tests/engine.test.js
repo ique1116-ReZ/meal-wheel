@@ -88,12 +88,16 @@ describe('pureRandom', () => {
     expect(pureRandom(categories)).toHaveLength(6);
   });
 
-  it('can produce the same dish twice across 6 slots (repeats allowed)', () => {
-    // With a 1-dish library per category, all 6 picks must be that dish.
+  it('allows repeats: lunch/dinner share categories, so they pick the same dish when category has 1 item', () => {
+    // With 1 dish per category and lunch+dinner both mapping to 正餐
+    // (and main meals sharing a flavor), the result has 4 unique dishes
+    // (the lunch-protein and dinner-protein slots pick from the same
+    // category, so they match; same for carbs). This proves repeats are
+    // allowed — the implementation does not enforce uniqueness.
     const tiny = Object.fromEntries(
       Object.entries(categories).map(([k, v]) => [k, [v[0]]])
     );
     const dishes = pureRandom(tiny).map(r => r.dish);
-    expect(new Set(dishes).size).toBe(1);
+    expect(new Set(dishes).size).toBe(4);
   });
 });
