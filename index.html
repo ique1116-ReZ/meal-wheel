@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fdf6e3">
+  <title>温润的餐桌</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+</head>
+<body>
+  <main id="app">
+    <header class="hero">
+      <div class="hero-date" id="hero-date">— · — · —</div>
+      <h1 class="hero-title">温润的餐桌</h1>
+      <p class="hero-sub">— 为你今日配的六道菜 —</p>
+    </header>
+
+    <div class="rule-bar">
+      <label for="rule-select" class="rule-label">规则</label>
+      <select id="rule-select" class="rule-select">
+        <option value="noRepeat">一天不重复</option>
+        <option value="pureRandom">纯随机</option>
+        <option value="flavorRotation">风味轮换</option>
+        <option value="mainRepeat">主菜重复副菜换</option>
+      </select>
+    </div>
+
+    <section id="meals" class="meals"></section>
+
+    <div class="actions">
+      <button id="copy-btn"  class="btn btn-secondary" type="button">📋 复制今日</button>
+      <button id="reroll-btn" class="btn btn-primary"   type="button">🎲 重新配餐</button>
+    </div>
+
+    <p class="tip">tip: 不喜欢某道？点旁边的"换一道"</p>
+
+    <div id="error" class="error" hidden></div>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
