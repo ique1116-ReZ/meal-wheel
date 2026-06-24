@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { categoryKeyFor, noRepeat } from '../engine.js';
+import { categoryKeyFor, noRepeat, pureRandom } from '../engine.js';
 
 describe('categoryKeyFor', () => {
   it('maps breakfast protein to 中式早餐蛋白', () => {
@@ -69,5 +69,31 @@ describe('noRepeat', () => {
     // Should not throw; should return 6 entries.
     const result = noRepeat(tiny);
     expect(result).toHaveLength(6);
+  });
+});
+
+describe('pureRandom', () => {
+  const categories = {
+    '中式早餐蛋白': ['蛋A', '蛋B', '蛋C'],
+    '中式早餐碳水': ['包A', '包B', '包C'],
+    '中式正餐蛋白': ['鱼A', '鱼B', '鱼C'],
+    '中式正餐碳水': ['饭A', '饭B', '饭C'],
+    '西式早餐蛋白': ['西A', '西B', '西C'],
+    '西式早餐碳水': ['西D', '西E', '西F'],
+    '西式正餐蛋白': ['西G', '西H', '西I'],
+    '西式正餐碳水': ['西J', '西K', '西L'],
+  };
+
+  it('returns 6 dishes', () => {
+    expect(pureRandom(categories)).toHaveLength(6);
+  });
+
+  it('can produce the same dish twice across 6 slots (repeats allowed)', () => {
+    // With a 1-dish library per category, all 6 picks must be that dish.
+    const tiny = Object.fromEntries(
+      Object.entries(categories).map(([k, v]) => [k, [v[0]]])
+    );
+    const dishes = pureRandom(tiny).map(r => r.dish);
+    expect(new Set(dishes).size).toBe(1);
   });
 });

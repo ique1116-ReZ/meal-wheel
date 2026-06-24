@@ -68,3 +68,14 @@ export function noRepeat(categories) {
     return { slotId: slot.id, dish: pick, flavor: flavors[slot.meal] };
   });
 }
+
+/**
+ * Rule 2: pureRandom — each slot picks independently; repeats allowed.
+ */
+export function pureRandom(categories) {
+  const flavors = pickFlavorsFree();
+  return SLOTS.map(slot => {
+    const key = categoryKeyFor(slot, flavors[slot.meal]);
+    return { slotId: slot.id, dish: pickOne(categories[key]), flavor: flavors[slot.meal] };
+  });
+}
