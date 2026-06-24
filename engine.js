@@ -27,3 +27,44 @@ export function categoryKeyFor(slot, flavor) {
   const kind = slot.kind === 'protein' ? '蛋白' : '碳水';
   return `${flavor}${meal}${kind}`;
 }
+
+/**
+ * Pick a random element from an array.
+ * @template T
+ * @param {T[]} arr
+ * @returns {T}
+ */
+function pickOne(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * Decide the flavor for each meal. The `noRepeat` rule can mix flavors
+ * freely (it doesn't constrain flavors), so this is the same as `pureRandom`.
+ * Exported so other rules can share it.
+ * @returns {{breakfast: Flavor, lunch: Flavor, dinner: Flavor}}
+ */
+function pickFlavorsFree() {
+  return {
+    breakfast: Math.random() < 0.5 ? '中式' : '西式',
+    lunch:     Math.random() < 0.5 ? '中式' : '西式',
+    dinner:    Math.random() < 0.5 ? '中式' : '西式',
+  };
+}
+
+/**
+ * Rule 1: noRepeat — all 6 dishes are unique within the day.
+ * @param {Record<string, string[]>} categories — the dish library.
+ * @returns {Array<{slotId: string, dish: string, flavor: Flavor}>}
+ */
+export function noRepeat(categories) {
+  const used = new Set();
+  const flavors = pickFlavorsFree();
+  return SLOTS.map(slot => {
+    const key = categoryKeyFor(slot, flavors[slot.meal]);
+    const pool = categories[key].filter(d => !used.has(d));
+    const pick = pool.length ? pickOne(pool) : pickOne(categories[key]);
+    used.add(pick);
+    return { slotId: slot.id, dish: pick, flavor: flavors[slot.meal] };
+  });
+}
