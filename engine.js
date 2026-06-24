@@ -96,3 +96,60 @@ export function flavorRotation(categories) {
     return { slotId: slot.id, dish: pickOne(categories[key]), flavor: flavors[slot.meal] };
   });
 }
+
+/**
+ * Rule 4: mainRepeat — lunch protein = dinner protein (cook once, eat twice).
+ * Carbs for lunch and dinner differ. Breakfast is independent.
+ */
+export function mainRepeat(categories) {
+  const breakfastFlavor = Math.random() < 0.5 ? '中式' : '西式';
+  const mainFlavor = Math.random() < 0.5 ? '中式' : '西式';
+  const flavors = {
+    breakfast: breakfastFlavor,
+    lunch:     mainFlavor,
+    dinner:    mainFlavor,
+  };
+
+  // Lunch protein = Dinner protein (shared).
+  const mainProteinKey = categoryKeyFor(
+    { meal: 'lunch', kind: 'protein' },
+    mainFlavor
+  );
+  const sharedProtein = pickOne(categories[mainProteinKey]);
+
+  // Lunch carb: pick from mainFlavor's main-carb category.
+  const lunchCarbKey = categoryKeyFor(
+    { meal: 'lunch', kind: 'carb' },
+    mainFlavor
+  );
+  const lunchCarb = pickOne(categories[lunchCarbKey]);
+
+  // Dinner carb: different from lunch carb, within same category.
+  const dinnerCarbKey = categoryKeyFor(
+    { meal: 'dinner', kind: 'carb' },
+    mainFlavor
+  );
+  const carbPool = categories[dinnerCarbKey].filter(d => d !== lunchCarb);
+  const dinnerCarb = carbPool.length
+    ? pickOne(carbPool)
+    : pickOne(categories[dinnerCarbKey]);
+
+  // Breakfast: independent picks.
+  const breakfastProteinKey = categoryKeyFor(
+    { meal: 'breakfast', kind: 'protein' },
+    breakfastFlavor
+  );
+  const breakfastCarbKey = categoryKeyFor(
+    { meal: 'breakfast', kind: 'carb' },
+    breakfastFlavor
+  );
+
+  return [
+    { slotId: 'breakfast-protein', dish: pickOne(categories[breakfastProteinKey]), flavor: breakfastFlavor },
+    { slotId: 'breakfast-carb',    dish: pickOne(categories[breakfastCarbKey]),    flavor: breakfastFlavor },
+    { slotId: 'lunch-protein',     dish: sharedProtein,                            flavor: mainFlavor },
+    { slotId: 'lunch-carb',        dish: lunchCarb,                                flavor: mainFlavor },
+    { slotId: 'dinner-protein',    dish: sharedProtein,                            flavor: mainFlavor },
+    { slotId: 'dinner-carb',       dish: dinnerCarb,                               flavor: mainFlavor },
+  ];
+}

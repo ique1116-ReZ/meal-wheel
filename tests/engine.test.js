@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { categoryKeyFor, noRepeat, pureRandom, flavorRotation, SLOTS } from '../engine.js';
+import { categoryKeyFor, noRepeat, pureRandom, flavorRotation, mainRepeat, SLOTS } from '../engine.js';
 
 describe('categoryKeyFor', () => {
   it('maps breakfast protein to 中式早餐蛋白', () => {
@@ -140,6 +140,52 @@ describe('flavorRotation', () => {
 
   it('picks from the right category for the assigned flavor', () => {
     const result = flavorRotation(categories);
+    for (const r of result) {
+      const slot = SLOTS.find(s => s.id === r.slotId);
+      const key = categoryKeyFor(slot, r.flavor);
+      expect(categories[key]).toContain(r.dish);
+    }
+  });
+});
+
+describe('mainRepeat', () => {
+  const categories = {
+    '中式早餐蛋白': ['早蛋A', '早蛋B'],
+    '中式早餐碳水': ['早包A', '早包B'],
+    '中式正餐蛋白': ['中鱼A', '中鱼B', '中鱼C'],
+    '中式正餐碳水': ['中饭A', '中饭B', '中饭C'],
+    '西式早餐蛋白': ['西早A', '西早B'],
+    '西式早餐碳水': ['西早C', '西早D'],
+    '西式正餐蛋白': ['西正A', '西正B', '西正C'],
+    '西式正餐碳水': ['西正D', '西正E', '西正F'],
+  };
+
+  it('returns 6 dishes', () => {
+    expect(mainRepeat(categories)).toHaveLength(6);
+  });
+
+  it('lunch protein and dinner protein are the same dish', () => {
+    for (let i = 0; i < 20; i++) {
+      const result = mainRepeat(categories);
+      const lunchP = result.find(r => r.slotId === 'lunch-protein').dish;
+      const dinnerP = result.find(r => r.slotId === 'dinner-protein').dish;
+      expect(lunchP).toBe(dinnerP);
+    }
+  });
+
+  it('lunch carb and dinner carb are different dishes (when category has > 1 dish)', () => {
+    for (let i = 0; i < 20; i++) {
+      const result = mainRepeat(categories);
+      const lunchC = result.find(r => r.slotId === 'lunch-carb').dish;
+      const dinnerC = result.find(r => r.slotId === 'dinner-carb').dish;
+      // All main-flavor categories in this test data have 3 dishes, so
+      // lunch and dinner carbs will always differ.
+      expect(lunchC).not.toBe(dinnerC);
+    }
+  });
+
+  it('picks dishes from the right category for the assigned flavor', () => {
+    const result = mainRepeat(categories);
     for (const r of result) {
       const slot = SLOTS.find(s => s.id === r.slotId);
       const key = categoryKeyFor(slot, r.flavor);
