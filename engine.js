@@ -79,3 +79,20 @@ export function pureRandom(categories) {
     return { slotId: slot.id, dish: pickOne(categories[key]), flavor: flavors[slot.meal] };
   });
 }
+
+/**
+ * Rule 3: flavorRotation — breakfast + lunch share one flavor; dinner uses the other.
+ */
+export function flavorRotation(categories) {
+  const breakfastFlavor = Math.random() < 0.5 ? '中式' : '西式';
+  const dinnerFlavor = breakfastFlavor === '中式' ? '西式' : '中式';
+  const flavors = {
+    breakfast: breakfastFlavor,
+    lunch:     breakfastFlavor,  // lunch shares with breakfast
+    dinner:    dinnerFlavor,
+  };
+  return SLOTS.map(slot => {
+    const key = categoryKeyFor(slot, flavors[slot.meal]);
+    return { slotId: slot.id, dish: pickOne(categories[key]), flavor: flavors[slot.meal] };
+  });
+}

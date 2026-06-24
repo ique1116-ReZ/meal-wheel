@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { categoryKeyFor, noRepeat, pureRandom } from '../engine.js';
+import { categoryKeyFor, noRepeat, pureRandom, flavorRotation, SLOTS } from '../engine.js';
 
 describe('categoryKeyFor', () => {
   it('maps breakfast protein to 中式早餐蛋白', () => {
@@ -105,5 +105,45 @@ describe('pureRandom', () => {
       }
     }
     expect(sawSize4).toBe(true);
+  });
+});
+
+describe('flavorRotation', () => {
+  const categories = {
+    '中式早餐蛋白': ['中早蛋A', '中早蛋B'],
+    '中式早餐碳水': ['中早包A', '中早包B'],
+    '中式正餐蛋白': ['中正鱼A', '中正鱼B'],
+    '中式正餐碳水': ['中正饭A', '中正饭B'],
+    '西式早餐蛋白': ['西早蛋A', '西早蛋B'],
+    '西式早餐碳水': ['西早包A', '西早包B'],
+    '西式正餐蛋白': ['西正鱼A', '西正鱼B'],
+    '西式正餐碳水': ['西正饭A', '西正饭B'],
+  };
+
+  it('returns 6 dishes', () => {
+    expect(flavorRotation(categories)).toHaveLength(6);
+  });
+
+  it('breakfast flavor == lunch flavor, dinner flavor is the other', () => {
+    for (let i = 0; i < 20; i++) {
+      const result = flavorRotation(categories);
+      const byMeal = Object.fromEntries(
+        ['breakfast', 'lunch', 'dinner'].map(m => [
+          m,
+          result.filter(r => r.slotId.startsWith(m))[0].flavor,
+        ])
+      );
+      expect(byMeal.breakfast).toBe(byMeal.lunch);
+      expect(byMeal.dinner).not.toBe(byMeal.breakfast);
+    }
+  });
+
+  it('picks from the right category for the assigned flavor', () => {
+    const result = flavorRotation(categories);
+    for (const r of result) {
+      const slot = SLOTS.find(s => s.id === r.slotId);
+      const key = categoryKeyFor(slot, r.flavor);
+      expect(categories[key]).toContain(r.dish);
+    }
   });
 });
