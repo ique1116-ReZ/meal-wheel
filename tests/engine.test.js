@@ -88,16 +88,22 @@ describe('pureRandom', () => {
     expect(pureRandom(categories)).toHaveLength(6);
   });
 
-  it('allows repeats: lunch/dinner share categories, so they pick the same dish when category has 1 item', () => {
-    // With 1 dish per category and lunch+dinner both mapping to 正餐
-    // (and main meals sharing a flavor), the result has 4 unique dishes
-    // (the lunch-protein and dinner-protein slots pick from the same
-    // category, so they match; same for carbs). This proves repeats are
-    // allowed — the implementation does not enforce uniqueness.
+  it('allows repeats: with 1 dish per category, repeated slots pick the same dish when flavors match', () => {
+    // With 1 dish per category, when lunch and dinner get the same flavor
+    // (~50% per run), the 6 slots collapse to 4 unique dishes (lunch/dinner
+    // protein share a 1-dish category, same for carbs). If pureRandom
+    // enforced uniqueness, the set size would always be 6. After 100 runs
+    // the probability of never seeing set size 4 is ~2^-100.
     const tiny = Object.fromEntries(
       Object.entries(categories).map(([k, v]) => [k, [v[0]]])
     );
-    const dishes = pureRandom(tiny).map(r => r.dish);
-    expect(new Set(dishes).size).toBe(4);
+    let sawSize4 = false;
+    for (let i = 0; i < 100; i++) {
+      if (new Set(pureRandom(tiny).map(r => r.dish)).size === 4) {
+        sawSize4 = true;
+        break;
+      }
+    }
+    expect(sawSize4).toBe(true);
   });
 });
