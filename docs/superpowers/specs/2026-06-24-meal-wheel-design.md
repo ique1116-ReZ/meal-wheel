@@ -259,7 +259,7 @@ git add . && git commit -m "feat: ..." && git push
 
 ### Live URL
 
-`https://suunto.github.io/meal-wheel/` (auto HTTPS via GitHub Pages; no domain registration needed; no ICP filing needed since static asset hosting on GitHub's CDN).
+`https://ique1116-rez.github.io/meal-wheel/` (auto HTTPS via GitHub Pages; no domain registration needed; no ICP filing needed since static asset hosting on GitHub's CDN).
 
 ## 8. `scripts/sync_dishes.py` Specification
 

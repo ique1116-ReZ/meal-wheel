@@ -37,7 +37,7 @@ git push                            # auto-deploys to GitHub Pages in ~10s
 
 ## Deployment
 
-The app is deployed to **https://suunto.github.io/meal-wheel/** via GitHub Pages.
+The app is deployed to **https://ique1116-rez.github.io/meal-wheel/** via GitHub Pages.
 
 To set up from scratch on a new machine:
 
