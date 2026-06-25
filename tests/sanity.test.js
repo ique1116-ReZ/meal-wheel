@@ -54,6 +54,27 @@ describe('dishes.json', () => {
     }
   });
 
+  it('at least 70% of recipes are step-based (contain 步骤)', () => {
+    const stepBased = Object.values(data.recipes).filter(r => r.includes('步骤')).length;
+    const ratio = stepBased / Object.keys(data.recipes).length;
+    expect(ratio).toBeGreaterThanOrEqual(0.70);
+  });
+
+  it('cooking-required recipes contain "步骤"', () => {
+    // Excludes ready-to-eat items (罐头/奶酪/酸奶/即食/火腿 etc). For
+    // everything else, the recipe must contain "步骤" — single-step items
+    // are allowed too, they just have a less strict format.
+    const isReadyToEat = (r) =>
+      r.includes('即食') || r.includes('即饮') || r.startsWith('开') || r.startsWith('即')
+      || /^(切片|撕碎|开杯|入碗)/.test(r);
+    const bad = [];
+    for (const [dish, recipe] of Object.entries(data.recipes)) {
+      if (isReadyToEat(recipe)) continue;
+      if (!recipe.includes('步骤')) bad.push(`${dish}: ${recipe}`);
+    }
+    expect(bad, `cooking recipes missing 步骤: ${bad.join('; ')}`).toEqual([]);
+  });
+
   it('well-known dishes produce recognizable recipes', () => {
     expect(data.recipes['水煮蛋']).toContain('煮');
     expect(data.recipes['红烧鲈鱼']).toContain('焖');
