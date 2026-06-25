@@ -10,6 +10,15 @@ A tiny static web app that picks 6 dishes a day (3 meals × protein + carb) from
 - PWA-enabled: install to home screen on iOS / Android
 - Hosted on GitHub Pages
 
+## Features
+
+- Generates a daily 6-dish plan (3 meals × protein + carb) from a 1400-dish library
+- 4 generation rules: no-repeat, pure random, flavor rotation, main-repeat
+- Per-dish swap with a single click
+- Each dish ships with a brief Chinese cooking instruction (<=100 chars);
+  tap "做法" on a row to reveal it, and it's included in the copied text
+- Copy today's plan (with recipes) to the clipboard in one tap
+
 ## Local development
 
 ```bash

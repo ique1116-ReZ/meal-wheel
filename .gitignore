@@ -1,3 +1,4 @@
 node_modules/
 .superpowers/
+scripts/__pycache__/
 *.log

@@ -1,5 +1,5 @@
 // sw.js — cache-first service worker for Meal Wheel.
-const CACHE_NAME = 'meal-wheel-v1';
+const CACHE_NAME = 'meal-wheel-v2';
 const ASSETS = [
   './',
   'index.html',

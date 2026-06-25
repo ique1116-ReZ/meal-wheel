@@ -18,6 +18,7 @@ const MEAL_META = {
 
 const state = {
   categories: null,
+  recipes: {},
   plan: [],
   rule: 'noRepeat',
 };
@@ -38,7 +39,8 @@ async function loadData() {
     const res = await fetch('data/dishes.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    state.categories = data.categories;
+    state.categories = data.categories || {};
+    state.recipes = data.recipes || {};
   } catch (err) {
     showError('数据加载失败 — 请检查网络后刷新');
     throw err;
@@ -112,6 +114,17 @@ function render() {
       info.appendChild(tag);
       info.appendChild(name);
 
+      const actions = document.createElement('div');
+      actions.className = 'dish-actions';
+
+      const recipeBtn = document.createElement('button');
+      recipeBtn.type = 'button';
+      recipeBtn.className = 'recipe-btn';
+      recipeBtn.textContent = '做法';
+      recipeBtn.setAttribute('aria-expanded', 'false');
+      recipeBtn.setAttribute('aria-label', `查看 ${entry.dish} 的做法`);
+      recipeBtn.addEventListener('click', () => toggleRecipe(row, entry.dish));
+
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'swap-btn';
@@ -119,13 +132,35 @@ function render() {
       btn.setAttribute('aria-label', `换掉 ${entry.dish}`);
       btn.addEventListener('click', () => handleSwap(entry.slotId, row));
 
+      actions.appendChild(recipeBtn);
+      actions.appendChild(btn);
+
+      const recipe = document.createElement('p');
+      recipe.className = 'dish-recipe';
+      recipe.hidden = true;
+      const recipeText = state.recipes[entry.dish] || '（暂无做法）';
+      recipe.textContent = recipeText;
+      recipe.setAttribute('data-dish', entry.dish);
+
       row.appendChild(info);
-      row.appendChild(btn);
+      row.appendChild(actions);
+      row.appendChild(recipe);
       section.appendChild(row);
     }
 
     els.meals.appendChild(section);
   }
+}
+
+function toggleRecipe(row, dishName) {
+  const recipe = row.querySelector('.dish-recipe');
+  const btn = row.querySelector('.recipe-btn');
+  const willOpen = recipe.hidden;
+  recipe.hidden = !willOpen;
+  btn.setAttribute('aria-expanded', String(willOpen));
+  btn.textContent = willOpen ? '收起' : '做法';
+  btn.classList.toggle('is-open', willOpen);
+  row.classList.toggle('is-recipe-open', willOpen);
 }
 
 function renderSwapFlash(row) {
@@ -146,6 +181,12 @@ function handleSwap(slotId, row) {
   const nameEl = row.querySelector('.dish-name');
   nameEl.textContent = newEntry.dish;
   row.querySelector('.swap-btn').setAttribute('aria-label', `换掉 ${newEntry.dish}`);
+  const recipeBtn = row.querySelector('.recipe-btn');
+  recipeBtn.setAttribute('aria-label', `查看 ${newEntry.dish} 的做法`);
+  const recipe = row.querySelector('.dish-recipe');
+  recipe.textContent = state.recipes[newEntry.dish] || '（暂无做法）';
+  recipe.setAttribute('data-dish', newEntry.dish);
+  // If the recipe was open and dish changed, update the text but keep it open.
   renderSwapFlash(row);
 }
 
@@ -159,7 +200,7 @@ function handleReroll() {
 }
 
 async function handleCopy() {
-  const text = formatCopyText(state.plan, new Date());
+  const text = formatCopyText(state.plan, new Date(), state.recipes);
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);

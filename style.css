@@ -137,11 +137,12 @@ html, body {
 
 .dish {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   padding: 8px 0;
   border-top: 1px dashed var(--border-dash);
-  gap: 12px;
+  gap: 8px 12px;
 }
 
 .dish:first-of-type { border-top: none; padding-top: 0; }
@@ -151,6 +152,7 @@ html, body {
   align-items: baseline;
   gap: 8px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .dish-tag {
@@ -171,12 +173,65 @@ html, body {
 
 .dish-name.is-empty { color: var(--text-muted); font-style: italic; }
 
+.dish-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.dish-recipe {
+  flex: 1 0 100%;
+  margin: 0;
+  padding: 8px 0 4px 22px;
+  font-family: var(--serif);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-style: italic;
+  border-top: 1px dotted var(--border-dash);
+  animation: recipe-fade-in 0.18s ease-out;
+}
+
+.dish-recipe[hidden] { display: none; }
+
+@keyframes recipe-fade-in {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.recipe-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-pill);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-family: var(--sans);
+  letter-spacing: 1px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.recipe-btn:hover, .recipe-btn:focus-visible {
+  background: var(--border);
+  color: var(--text);
+  outline: none;
+}
+
+.recipe-btn.is-open {
+  background: var(--text-muted);
+  color: var(--text-cta);
+  border-color: var(--text-muted);
+}
+
 .swap-btn {
   background: transparent;
   border: 1px solid var(--accent);
   color: var(--accent);
   border-radius: var(--radius-pill);
-  padding: 5px 12px;
+  padding: 5px 10px;
   font-size: 12px;
   font-family: var(--sans);
   cursor: pointer;
